@@ -1,9 +1,12 @@
 from colorama import Fore, init
 from time import sleep
+from pygame import mixer
 
-
+mixer.init(44100)
 def __main__():
     init()
+    bing = mixer.Sound("startup.mp3")
+    bing.play()
     print(
         "            _____    _____   _   _   ____  _______  _    _  _____   _   _   ____    ____    __     _____  _____  _____  _       ____  ")
     sleep(0.1)
@@ -38,7 +41,8 @@ def __main__():
     choices = ["best", "worst", "first"]
     print(f"{Fore.WHITE}┌────────────────────────────────────────────────────────────────────────────────────────────┐")
     print(f"{Fore.WHITE}│                                                                                            │")
-    print(f"{Fore.GREEN}│Digite um número para usar como valores para inserir na partição ou digite c para prosseguir│")
+    print(f"{Fore.GREEN}│        Digite um número para usar como valores para inserir na partição                    │")
+    print(f"{Fore.GREEN}│                     ou digite C para                                                       │")
     print(f"{Fore.WHITE}│                                                                                            │")
     print(f"{Fore.WHITE}└────────────────────────────────────────────────────────────────────────────────────────────┘")
 
@@ -67,50 +71,57 @@ def __main__():
 
 
 def fitFirst(parts, vals):
-    for part, val in zip(parts, vals):
-        if not part["Occupied"]:
-            part["Occupied"] = True
-            part["Value"] = val
+    for val in vals:
+        added = False
+        for part in parts:
+            if not part["Occupied"] and val <= part["Size"]:
+                part["Occupied"] = True
+                part["Value"] = val
+                print(part)
+                added = True
+                break
+        if not added:
+            print(f"Processo de tamanho: {val} Não pode ser adicionado a qualquer partição")
 
     for part in parts:
         print(f"\t{Fore.YELLOW}│{part['Size']}kb: {part['Value']}kb|")
 
+
 def fitWorst(parts, vals):
-    attempts = 0
+    for val in vals:
+        worst_fit = None
+        for part in parts:
+            if not part["Occupied"] and val <= part["Size"]:
+                if worst_fit is None or part["Size"] > worst_fit["Size"]:
+                    worst_fit = part
+        if worst_fit is not None:
+            worst_fit["Occupied"] = True
+            worst_fit["Value"] = val
+            print(worst_fit)
+        else:
+            print(f"Processo de tamanho: {val} Não pode ser adicionado a qualquer partição")
 
-    toFill = []
-    parts.sort(reverse=True)
-    while (len(toFill) < len(parts)):
-        for i in range(len(parts)):
-            if vals[i] <= parts[i] and not vals[i] in toFill:
-                toFill.append(vals[i])
-        attempts += 1
-        if attempts > 10:
-            print(f"{Fore.RED}Não há espaço disponível")
-            quit()
+    for part in parts:
+        print(f"\t{Fore.YELLOW}│{part['Size']}kb: {part['Value']}kb|")
 
-    for i in range(len(parts)):
-        print(f"{Fore.YELLOW}{parts[i]}kb: {toFill[i]}kb")
+    bong.play()
 
 
 def fitBest(parts, vals):
-    attempts = 0
+    for val in vals:
+        best_fit = None
+        for part in parts:
+            if not part["Occupied"] and val <= part["Size"]:
+                if best_fit is None or part["Size"] - val < best_fit["Size"] - best_fit["Value"]:
+                    best_fit = part
+        if best_fit is not None:
+            best_fit["Occupied"] = True
+            best_fit["Value"] = val
+        else:
+            print(f"Processo de tamanho: {val} Não pode ser adicionado a qualquer partição")
 
-    toFill = []
-    parts.sort()
-    vals.sort()
-    while (len(toFill) < len(parts)):
-        for i in range(len(parts)):
-            if vals[i] <= parts[i] and not vals[i] in toFill:
-                toFill.append(vals[i])
-        attempts += 1
-        if attempts > 10:
-            print(f"{Fore.RED}Não há espaço disponível")
-            quit()
-
-    for i in range(len(parts)):
-        print(f"\t{Fore.YELLOW}│{parts[i]}kb: {toFill[i]}kb|")
-
+    for part in parts:
+        print(f"\t{Fore.YELLOW}│{part['Size']}kb: {part['Value']}kb|")
 
 if __name__ == '__main__':
     __main__()
